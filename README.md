@@ -42,8 +42,19 @@ public class AppConfig {
 ```                     
 - 위 코드에서 AppConfig는 해당 클라이언트의 객체 생성 및 연결을 담당하며(제어 흐름 관리), 클라이언트는 오직 주어진 로직만을 수행한다. 
 - 위와 같이 AppConfig가 클라이언트의 프로그램의 흐름을 제어하는 것, 즉, 프로그램 자신이 아닌 외부에서 제어 흐름을 관리하는 것을 **IoC(제어의 역전)** 이라고 한다.                  
-- AppConfig와 같이 객체를 생성/관리하며 의존관계를 연결해주는 것을 **DI 컨테이너** 라고 한다.                  
+- AppConfig와 같이 객체를 생성/관리하며 의존관계를 연결해주는 것을 **DI 컨테이너** 라고 한다.               
 
+## #2 스프링 컨테이너와 스프링 빈               
+### [#2-1 스프링 컨테이너](https://github.com/HunSeongPark/spring-core/commit/80b3f3880ef6f9de3e0295343ec50dbb963843ed)               
+- `ApplicationContext`를 스프링 컨테이너라고 한다.              
+- `@Configuration`이 붙은 AppConfig를 스프링의 구성정보로 사용한다. 이 때, `@Bean` 어노테이션이 붙어있는 메서드를 모두 호출하여 반환된 객체를 스프링 컨테이너에 등록한다.            
+- `@Bean` 어노테이션을 통해 스프링 컨테이너에 등록된 스프링 빈은 메서드명을 이름으로 사용한다.           
+- 스프링 빈은 `applicationContext.getBean()` 메서드를 통해 해당 객체를 찾을 수 있다.                     
 
+### [#2-2 스프링 빈](https://github.com/HunSeongPark/spring-core/commit/80b3f3880ef6f9de3e0295343ec50dbb963843ed)                      
+- `@Bean` 어노테이션을 통해 스프링 컨테이너에 등록된 스프링 빈은 메서드명을 이름으로 사용한다.           
+- 빈 이름을 직접 부여할 수도 있다. `@Bean(name="hi")`
+- 빈 이름이 중복된다면 다른 빈이 무시되거나, 기존 빈을 덮는 등 설정에 따라 오류가 발생한다.                          
+- 스프링 빈은 `applicationContext.getBean()` 메서드를 통해 해당 객체를 찾을 수 있다.                         
 
 
