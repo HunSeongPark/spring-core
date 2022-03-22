@@ -57,4 +57,55 @@ public class AppConfig {
 - 빈 이름이 중복된다면 다른 빈이 무시되거나, 기존 빈을 덮는 등 설정에 따라 오류가 발생한다.                          
 - 스프링 빈은 `applicationContext.getBean()` 메서드를 통해 해당 객체를 찾을 수 있다.                         
 
+### [#2-3 스프링 컨테이너와 싱글톤 1](https://github.com/HunSeongPark/spring-core/commit/d13210e445449ec3d4d8ae0974b276ebeac4efce)                            
+- 싱글톤(Singleton) 패턴 : 클래스의 인스턴스가 1개만 생성되는 것을 보장하는 디자인 패턴                        
+- 일반적인 싱글톤 패턴의 문제점 
+1. 싱글톤 패턴을 구현하는 코드의 양이 증가
+2. 의존관계 상 클라이언트가 구현 클래스에 의존 (내부적으로 instance를 생성하여 가지고 있어야 함) -> DIP, OCP 위반
+3. 테스트의 어려움
+4. 내부 속성의 변경 및 초기화가 어려움
+5. 1개의 인스턴스만이 존재해야 하므로 외부에서 객체 생성을 막기 위해 private 생성자를 사용함으로써 자식 클래스의 생성이 어려움
+- 스프링 컨테이너는 위 싱글톤 패턴의 문제점을 해결하면서 빈을 싱글톤으로 관리한다.         
+```java
+@Test
+    @DisplayName("스프링 컨테이너")
+    void springContainer() {
+        AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext(AppConfig.class);
 
+        MemberService memberService1 = ac.getBean("memberService", MemberService.class);
+        MemberService memberService2 = ac.getBean("memberService", MemberService.class);
+        System.out.println("memberService1 = " + memberService1);
+        System.out.println("memberService2 = " + memberService2);
+
+        // memberService1 == memberService2 (OK)
+        Assertions.assertThat(memberService1).isSameAs(memberService2);
+    }
+```
+결과                      
+```java
+memberService1 = hello.core.member.MemberServiceImpl@436390f4
+memberService2 = hello.core.member.MemberServiceImpl@436390f4
+```
+bean을 2번 조회할 때 모두 같은 객체를 반환함을 알 수 있다.       
+- 이렇게 싱글톤 객체를 생성/관리하는 기능을 **싱글톤 레지스트리** 라고 한다.
+- 이러한 싱글톤 패턴을 제공하는 스프링 컨테이너로 인해 각 요청마다 새롭게 객체를 생성함으로써 생기는 메모리 낭비를 막고 효율적인 객체의 재사용이 가능하다.
+- !! 싱글톤 방식은 여러 클라이언트가 하나의 객체를 공유하므로, 상태가 유지되도록(Stateful) 설계하면 안된다.                     
+ex) A가 10000원 주문 -> B가 20000원 주문 -> A가 주문금액 조회 시 상태 유지로 인해 자신의 주문금액인 10000원이 아닌 20000원을 반환 받는 문제가 발생            
+
+### [#2-3 스프링 컨테이너와 싱글톤 2](https://github.com/HunSeongPark/spring-core/commit/d13210e445449ec3d4d8ae0974b276ebeac4efce)                            
+- 스프링 컨테이너는 `@Configuration` 어노테이션이 붙은 클래스에 바이트코드를 조작하는 CGLIB(Byte Code Generation Library) 기술을 통해 싱글톤을 보장한다.
+- 실제로 스프링 컨테이너는 `@Configuration` 어노테이션이 붙은 클래스를 상속받은 임의의 클래스를 만들고, CGLIB 기술을 통해 다음과 같은 흐름의 로직을 추가하고 그 클래스를 빈으로 등록한 것이다.
+```java
+if (해당 객체가 스프링 컨테이너에 등록되어 있다면) {
+    return 스프링 컨테이너에서 해당 객체를 찾아 반환
+} else {
+    return 기존 로직을 호출하여 새로운 객체를 생성하고 스프링 컨테이너에 등록 후 반환
+}
+```
+
+내가 만든 AppConfig.class가 아닌 AppConfig를 상속받은 임의의 다른 클래스가 등록되어 있음
+```java
+bean = class hello.core.AppConfig$$EnhancerBySpringCGLIB$$ae12a2ec              
+```
+
+- 이러한 원리를 통해 알 수 있는 것 : `@Configuration` 어노테이션을 적용하지 않고 `@Bean` 어노테이션 만으로 빈을 등록 시 순수하게 만든 클래스가 등록되고, CGLIB 기술이 적용되지 않아 싱글톤이 보장되지 않는다.
