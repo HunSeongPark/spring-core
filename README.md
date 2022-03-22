@@ -26,7 +26,7 @@ public class OrderServiceImpl implements OrderService {
 ```               
 이를 해결하기 위해서는 누군가가 OrderServiceImpl에 DiscountPolicy의 구현객체를 대신 생성, 주입해주어야 한다. (후에 정리할 내용인 DI 컨테이너를 통해 해결)       
 
-### [#1-2 본 예제에서 SOLID 원칙의 활용](https://github.com/HunSeongPark/spring-core/commit/7ef823d15bf4a193449ef47e5a988ea95659240a)                  
+### [#1-2 본 예제에서 SOLID 원칙의 활용 / IoC, DI Container](https://github.com/HunSeongPark/spring-core/commit/7ef823d15bf4a193449ef47e5a988ea95659240a)                  
 - SRP : 기존 OrderService 클라이언트 객체는 직접 구현객체를 생성 / 의존성 연결 / 실행하는 다수의 책임을 가지고 있었으나, AppConfig를 통해 구현객체의 생성/연결 책임을 넘기고 클라이언트는 오직 실행만을 수행하는 단일 책임의 원칙(SRP)을 지키게 됨                     
 - DIP :  기존 OrderService 클라이언트 객체는 직접 구현객체를 생성함으로써 구체화에도 의존하고 있었으나, AppConfig를 통해 클라이언트는 구현객체를 직접 생성하지 않고 의존성을 주입받으며 추상화에만 의존하는 의존관계 역전 원칙(DIP)을 지키게 됨                      
 - OCP : AppConfig를 통해 애플리케이션의 구성 영역을 클라이언트가 맡지 않게 되며 DiscountPolicy를 변경할 때 클라이언트 코드가 아닌 AppConfig 클래스의 코드를 변경하게 된다. 이를 통해 개방-폐쇄의 원칙(OCP)을 지키게 됨                 
@@ -39,8 +39,10 @@ public class AppConfig {
     }
     
 }
-```
-
+```                     
+- 위 코드에서 AppConfig는 해당 클라이언트의 객체 생성 및 연결을 담당하며(제어 흐름 관리), 클라이언트는 오직 주어진 로직만을 수행한다. 
+- 위와 같이 AppConfig가 클라이언트의 프로그램의 흐름을 제어하는 것, 즉, 프로그램 자신이 아닌 외부에서 제어 흐름을 관리하는 것을 *IoC(제어의 역전)*이라고 한다.                  
+- AppConfig와 같이 객체를 생성/관리하며 의존관계를 연결해주는 것을 *DI 컨테이너*라고 한다.                  
 
 
 
