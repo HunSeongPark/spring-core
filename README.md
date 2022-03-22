@@ -7,7 +7,7 @@
 
 ## #1 객체지향원리 적용               
 
-### #1-1 OCP, DIP의 위반             
+### [#1-1 OCP, DIP의 위반](https://github.com/HunSeongPark/spring-core/commit/9e0f545d1fdb3bad89371f7802b34cd6d8380193)             
 - OCP(Open/Closed Principle, 개방-폐쇄 원칙) : 소프트웨어 요소는 확장에는 열려있고, 변경에는 닫혀있어야 한다.          
 - DIP(Dependency Inversion Principle, 의존관계 역전 원칙) : 추상화에 의존하고, 구체화에 의존하면 안된다. 즉, 구현 클래스가 아닌 인터페이스에 의존해야한다.          
 
