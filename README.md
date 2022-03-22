@@ -24,7 +24,7 @@ public class OrderServiceImpl implements OrderService {
     
 }
 ```               
-이를 해결하기 위해서는 누군가가 OrderServiceImpl에 DiscountPolicy의 구현객체를 대신 생성, 주입해주어야 한다.           
+이를 해결하기 위해서는 누군가가 OrderServiceImpl에 DiscountPolicy의 구현객체를 대신 생성, 주입해주어야 한다. (아래 정리할 내용인 DI 컨테이너를 통해 해결)       
 
 
 
