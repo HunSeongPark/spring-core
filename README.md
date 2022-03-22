@@ -92,7 +92,7 @@ bean을 2번 조회할 때 모두 같은 객체를 반환함을 알 수 있다.
 - !! 싱글톤 방식은 여러 클라이언트가 하나의 객체를 공유하므로, 상태가 유지되도록(Stateful) 설계하면 안된다.                     
 ex) A가 10000원 주문 -> B가 20000원 주문 -> A가 주문금액 조회 시 상태 유지로 인해 자신의 주문금액인 10000원이 아닌 20000원을 반환 받는 문제가 발생            
 
-### [#2-3 스프링 컨테이너와 싱글톤 2](https://github.com/HunSeongPark/spring-core/commit/d13210e445449ec3d4d8ae0974b276ebeac4efce)                            
+### [#2-4 스프링 컨테이너와 싱글톤 2](https://github.com/HunSeongPark/spring-core/commit/d13210e445449ec3d4d8ae0974b276ebeac4efce)                            
 - 스프링 컨테이너는 `@Configuration` 어노테이션이 붙은 클래스에 바이트코드를 조작하는 CGLIB(Byte Code Generation Library) 기술을 통해 싱글톤을 보장한다.
 - 실제로 스프링 컨테이너는 `@Configuration` 어노테이션이 붙은 클래스를 상속받은 임의의 클래스를 만들고, CGLIB 기술을 통해 다음과 같은 흐름의 로직을 추가하고 그 클래스를 빈으로 등록한 것이다.
 ```java
