@@ -136,3 +136,59 @@ void basicScan() {
 - `@ComponentScan(basePackages="hello.core")`와 같이 스캔을 수행할 패키지의 위치를 지정할 수 있다. 이 경우 hello.core 패키지 포함 하위 패키지를 스캔한다. 지정하지 않을 시 기본 스캔 패키지 위치는 해당 컴포넌트스캔 클래스가 존재하는 패키지이다.
 - !! 권장하는 방법 : 패키지의 위치를 위와같이 명시적으로 지정하지 않고, 프로젝트 루트 위치에 컴포넌트 스캔 클래스를 두어 프로젝트 패키지를 basePackage로 지정한다.              
 - `@Controller, @Service, @Repository, @Configuration` 어노테이션도 `@Component`를 포함하고 있어 컴포넌트스캔 대상이 된다.
+
+### [#3-2 @Autowired를 통한 의존관계 자동 주입](https://github.com/HunSeongPark/spring-core/commit/d13210e445449ec3d4d8ae0974b276ebeac4efce)  
+- 다음과 같이 생성자, setter에 `@Autowired` 어노테이션을 붙이면 스프링 컨테이너가 자동으로 컨테이너에 존재하는 해당 타입의 스프링 빈을 찾아서 주입한다.
+```java
+@Component
+public class MemberServiceImpl implements MemberService {
+
+    private final MemberRepository memberRepository;
+
+    @Autowired // 자동으로 스프링 컨테이너 내의 MemberRepository 빈을 찾아 의존성 주입
+    public MemberServiceImpl(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
+```
+- 생성자, setter, 필드, 메서드 주입에서 `@Autowired` 어노테이션을 통한 의존관계 자동 주입이 가능하다.
+- 일반적으로 생성자 주입은 불변, 필수 의존관계에 사용 / setter 주입은 선택, 변경 가능성이 있는 의존관계에 사용한다. 그 외 필드, 메서드 주입은 권장하지 않는다.
+필드 주입 : 외부에서 해당 값에 대한 변경이 불가능하므로 테스트가 힘들다.                  
+메서드 주입 : 생성자 주입을 주로 사용한다.               
+- ! 생성자 주입에서 `@Autowired` 사용 시 생성자가 하나만 있을 경우 해당 어노테이션의 생략이 가능하다.
+- 주입할 스프링 빈이 컨테이너에 존재하지 않더라도 동작해야 할 경우, `@Autowired(required=false)`를 통해 옵셔널하게 처리할 수 있다. 이 때 스프링 빈이 존재하지 않아 의존성 자동 주입이 불가능 할 경우 처리하는 방식에는 크게 3가지가 있다.
+```java
+@Autowired(required = false)
+public void setNoBean1(Member member) {
+    // 자동 주입할 대상이 없으므로 setter 메서드 자체가 호출되지 않는다.
+}
+
+@Autowired(required = false)
+public void setNoBean2(@Nullable Member member) {
+    // 자동 주입 대상이 없으면 null이 member에 들어온다.
+}
+
+@Autowired(required = false)
+public void setNoBean3(Optional<Member> member) {
+    // 자동 주입 대상이 없으면 Optional.empty가 member에 들어온다.
+}
+```
+- 주로 생성자 주입 방식을 택한다. 대부분의 의존관계 주입은 애플리케이션 종료 시점까지 변하지 않아야 하는 경우가 많아 생성 시점에 딱 1번만 호출이 보장되고 final 키워드를 사용할 수 있는 생성자 주입을 많이 사용한다(불변). 또한 프레임워크 없이 순수 자바코드를 통한 유닛테스트에서 의존관계 주입이 누락되었을 때 생성자 주입의 경우 컴파일 오류를 띄워준다(누락방지).
+- `@Autowired` 어노테이션을 통한 의존관계 자동주입 시 빈이 충돌하는 경우 다음과 같은 3가지 해결 방법이 있다.
+1. `@Autowired` 어노테이션은 타입 매칭에서 여러 빈이 존재할 경우 필드 이름, 파라미터 이름으로 추가 매칭을 시도한다. 빈이 충돌할 경우 필드 명을 주입하고자 하는 빈의 이름으로 변경한다.
+2. `@Qualifier("")` 어노테이션을 통해 추가 구분자를 붙여준다.
+```java
+@Component
+@Qualifier("rateDiscountPolicy")
+public class RateDiscountPolicy implements DiscountPolicy {}
+
+@Component
+@Qualifier("fixDiscountPolicy")
+public class FixDiscountPolicy implements DiscountPolicy {}
+
+@Autowired
+public DiscountPolicy setDiscountPolicy(@Qualifier("rateDiscountPolicy") DiscountPolicy discountPolicy) {
+    ...
+}
+```
+3. `@Primary` 어노테이션을 붙여 충돌하는 빈 중 우선순위(우선권을 가지고 매칭되는 빈)를 설정한다.
