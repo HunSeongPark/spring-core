@@ -108,4 +108,31 @@ if (해당 객체가 스프링 컨테이너에 등록되어 있다면) {
 bean = class hello.core.AppConfig$$EnhancerBySpringCGLIB$$ae12a2ec              
 ```
 
-- 이러한 원리를 통해 알 수 있는 것 : `@Configuration` 어노테이션을 적용하지 않고 `@Bean` 어노테이션 만으로 빈을 등록 시 순수하게 만든 클래스가 등록되고, CGLIB 기술이 적용되지 않아 싱글톤이 보장되지 않는다.
+- 이러한 원리를 통해 알 수 있는 것 : `@Configuration` 어노테이션을 적용하지 않고 `@Bean` 어노테이션 만으로 빈을 등록 시 순수하게 만든 클래스가 등록되고, CGLIB 기술이 적용되지 않아 싱글톤이 보장되지 않는다.                           
+
+## #3 @ComponentScan / @Autowired                   
+### [#3-1 @ComponentScan을 통한 빈 자동등록](https://github.com/HunSeongPark/spring-core/commit/d13210e445449ec3d4d8ae0974b276ebeac4efce)                   
+- 설정 정보에 `@ComponentScan` 어노테이션을 붙여주게 되면 `@Component` 어노테이션이 붙은 클래스를 스캔해 자동으로 스프링 빈으로 등록해준다.
+- 기존에 `@Configuration` 어노테이션과 `@Bean` 어노테이션을 통해 수동으로 빈을 등록해주는 설정 정보인 AppConfig 클래스와 달리 아래처럼 아무 메서드 없이도 `@Component` 어노테이션이 붙은 클래스는 빈 등록이 이루어진다.
+```java
+@Configuration
+@ComponentScan
+public class AutoAppConfig {
+    // 아무 메서드도 존재하지 않는다.
+}
+```
+이로 인해 해당 테스트는 정상적으로 통과한다.                   
+```java
+@Test
+void basicScan() {
+   ApplicationContext ac = new AnnotationConfigApplicationContext(AutoAppConfig.class);
+   MemberService memberService = ac.getBean(MemberService.class);
+   // MemberService 클래스에 @Component 어노테이션을 붙였으므로 컴포넌트스캔에 의해 Bean 등록이 자동으로 이루어짐 (OK)
+   Assertions.assertThat(memberService).isInstanceOf(MemberService.class);
+}
+```
+- `@Component`가 붙은 클래스의 빈 등록 시 기본 이름은 클래스명의 맨 앞글자를 소문자로 바꾼 이름을 사용한다. ex) MemberService -> memberService
+- 만약 스프링 빈의 이름을 바꾸고 싶다면 `@Component("memberServiceNew")`와 같이 바꾸면 된다.
+- `@ComponentScan(basePackages="hello.core")`와 같이 스캔을 수행할 패키지의 위치를 지정할 수 있다. 이 경우 hello.core 패키지 포함 하위 패키지를 스캔한다. 지정하지 않을 시 기본 스캔 패키지 위치는 해당 컴포넌트스캔 클래스가 존재하는 패키지이다.
+- !! 권장하는 방법 : 패키지의 위치를 위와같이 명시적으로 지정하지 않고, 프로젝트 루트 위치에 컴포넌트 스캔 클래스를 두어 프로젝트 패키지를 basePackage로 지정한다.              
+- `@Controller, @Service, @Repository, @Configuration` 어노테이션도 `@Component`를 포함하고 있어 컴포넌트스캔 대상이 된다.
