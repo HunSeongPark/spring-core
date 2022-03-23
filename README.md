@@ -200,7 +200,7 @@ public DiscountPolicy setDiscountPolicy(@Qualifier("rateDiscountPolicy") Discoun
 - 따라서 스프링에서 지원하는 다양한 방식의 콜백을 통해 다음과 같은 lifecycle을 가지게 할 수 있다.
 `스프링 컨테이너 생성 -> 스프링 빈 생성 -> 의존관계 주입 -> (초기화 콜백) -> 사용 -> (소멸전 콜백) -> 종료`
 - 크게 3가지 방법이 존재하는데, 아래에서 아라보자.                  
-- 
+ 
 ### [#4-2 스프링에서 지원하는 3가지 방식의 lifecycle callback](https://github.com/HunSeongPark/spring-core/commit/e5c5b47eec199b7b3276b8aca306e3810ee0c434)
 ! 참고 : 객체의 생성과 초기화를 분리하자. 생성자는 파라미터를 받고 메모리를 할당해 객체를 생성하는 책임만을 가지게하고, 생성된 값을 활용해 외부 커넥션 연결 등 무거운 초기화 작업을 수행하는 것은 초기화 메서드에게 넘기는 것이 좋다.                   
 1. InitializingBean, DisposableBean 인터페이스를 구현
