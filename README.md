@@ -197,7 +197,7 @@ public DiscountPolicy setDiscountPolicy(@Qualifier("rateDiscountPolicy") Discoun
 ### [#4-1 Bean의 생명주기와 초기화, 종료 작업](https://github.com/HunSeongPark/spring-core/commit/c7140cd4df55750c1701c020d3fd4158a100c512)              
 - DB 커넥션 풀이나 네트워크 소켓과 같이 애플리케이션 시작 시점에 초기화 메소드를 수행하고, 애플리케이션 종료 시점에 종료 메소드를 수행하는 것이 필요할 때가 많이 있다.
 - 스프링 Bean은 `객체 생성 -> 의존관계 주입`의 과정을 거친다.
-- 따라서 스프링에서 지원하는 다양한 방식의 콜백을 통해 다음과 같은 lifecycle을 가지게 할 수 있다.
+- 따라서 스프링에서 지원하는 다양한 방식의 콜백을 통해 다음과 같은 lifecycle을 가지게 할 수 있다.                               
 `스프링 컨테이너 생성 -> 스프링 빈 생성 -> 의존관계 주입 -> (초기화 콜백) -> 사용 -> (소멸전 콜백) -> 종료`
 - 크게 3가지 방법이 존재하는데, 아래에서 아라보자.                  
  
