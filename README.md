@@ -191,4 +191,72 @@ public DiscountPolicy setDiscountPolicy(@Qualifier("rateDiscountPolicy") Discoun
     ...
 }
 ```
-3. `@Primary` 어노테이션을 붙여 충돌하는 빈 중 우선순위(우선권을 가지고 매칭되는 빈)를 설정한다.
+3. `@Primary` 어노테이션을 붙여 충돌하는 빈 중 우선순위(우선권을 가지고 매칭되는 빈)를 설정한다.                           
+
+## #4 [스프링 Bean의 생명주기와 콜백]                          
+### [#4-1 Bean의 생명주기와 초기화, 종료 작업](https://github.com/HunSeongPark/spring-core/commit/c7140cd4df55750c1701c020d3fd4158a100c512)              
+- DB 커넥션 풀이나 네트워크 소켓과 같이 애플리케이션 시작 시점에 초기화 메소드를 수행하고, 애플리케이션 종료 시점에 종료 메소드를 수행하는 것이 필요할 때가 많이 있다.
+- 스프링 Bean은 `객체 생성 -> 의존관계 주입`의 과정을 거친다.
+- 따라서 스프링에서 지원하는 다양한 방식의 콜백을 통해 다음과 같은 lifecycle을 가지게 할 수 있다.
+`스프링 컨테이너 생성 -> 스프링 빈 생성 -> 의존관계 주입 -> (초기화 콜백) -> 사용 -> (소멸전 콜백) -> 종료`
+- 크게 3가지 방법이 존재하는데, 아래에서 아라보자.                  
+- 
+### [#4-2 스프링에서 지원하는 3가지 방식의 lifecycle callback](https://github.com/HunSeongPark/spring-core/commit/e5c5b47eec199b7b3276b8aca306e3810ee0c434)
+! 참고 : 객체의 생성과 초기화를 분리하자. 생성자는 파라미터를 받고 메모리를 할당해 객체를 생성하는 책임만을 가지게하고, 생성된 값을 활용해 외부 커넥션 연결 등 무거운 초기화 작업을 수행하는 것은 초기화 메서드에게 넘기는 것이 좋다.                   
+1. InitializingBean, DisposableBean 인터페이스를 구현
+다음과 같이 InitializingBean, DisposableBean 인터페이스를 구현하게 되면 자동으로 의존관계 주입 후 afterPropertiesSet() 메서드가, 소멸 전 destroy() 메서드가 호출된다.
+```java
+public class InterfaceNetworkClient implements InitializingBean, DisposableBean {
+
+    // 객체 생성, 의존관계 주입 완료 후 호출
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        connect();
+        call("초기화 연결 메시지");
+    }
+
+    // 빈이 소멸되기 직전 호출
+    @Override
+    public void destroy() throws Exception {
+        disconnect();
+    }
+}
+```
+단점 : 해당 인터페이스가 스프링 전용 인터페이스이므로 bean이 스프링 코드에 의존한다. 또한 override를 통해 콜백 메서드를 구현하므로 메서드 이름을 바꿀 수 없다. 코드를 직접 수정하여야 하므로 외부 라이브러리에 적용할 수 없다. 후술할 더 나은 방법들이 존재하므로 거의 사용하지 않는다.                     
+
+2. @Bean(initMethod="", destroyMethod="")를 통해 초기화, 종료 메서드 이름을 지정한다
+다음과 같이 Bean 어노테이션에 initMethod, destroyMethod 이름을 지정하면 각각 초기화 메서드, 종료 메서드로써 생명주기에 맞게 호출된다.
+```java
+@Configuration
+    static class LifeCycleConfig {
+
+        @Bean(initMethod="init", destroyMethod="close")
+        public ConfigNetworkClient configNetworkClient() {
+            ConfigNetworkClient networkClient = new ConfigNetworkClient();
+            networkClient.setUrl("http://hello-spring.dev");
+            return networkClient;
+        }
+    }
+```                 
+해당 방법은 위 인터페이스 방식과 달리 메서드 이름을 자유롭게 줄 수 있고, bean이 스프링 코드에 의존하지 않는다는 장점이 있다. 또한, 코드를 수정하는 것이 아니라 설정 정보를 사용하므로 외부 라이브러리에도 적용 할 수 있다.                                   
+! destoryMethod의 경우 기본값이 `(inferred)`으로 되어있다(추론). 대부분의 라이브러리는 종료 메서드 이름으로 `close`, `shutdown`을 가지므로 destoryMethod를 지정하지 않으면 추론 기능에 의해 `close`, `shutdown`이라는 이름의 메서드를 소멸 직전에 호출해준다.                     
+
+3. @PostConstruct / @PreDestroy 어노테이션을 사용한다.                
+다음과 같이 초기화, 종료 메서드에 각각 @PostConstruct, @PreDestroy 어노테이션을 지정하면 각각 초기화 메서드, 종료 메서드로써 생명주기에 맞게 호출된다.              
+```java
+// 객체 생성, 의존관계 주입 완료 후 호출
+    @PostConstruct
+    public void init() {
+        connect();
+        call("초기화 연결 메시지");
+    }
+
+    // 빈이 소멸되기 직전 호출
+    @PreDestroy
+    public void close() {
+        disconnect();
+    }
+```
+가장 편리하게 콜백 메서드를 지정할 수 있는 방법으로, 최신 스프링에서 가장 권장하는 방법이기도 하다.                           
+해당 어노테이션의 패키지는 `javax.annotation`으로, 스프링에 종속적인 기술이 아닌 JSR-250이라는 자바표준에 해당한다.                        
+유일한 단점으로는 코드를 수정해야 하므로 외부 라이브러리에 적용할 수 없다는 것이다. 외부 라이브러리의 콜백메서드는 2번째 방법인 @Bean의 기능을 사용하고, 이외의 콜백 메서드는 해당 어노테이션을 권장한다.                                   
