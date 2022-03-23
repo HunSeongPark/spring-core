@@ -193,7 +193,7 @@ public DiscountPolicy setDiscountPolicy(@Qualifier("rateDiscountPolicy") Discoun
 ```
 3. `@Primary` 어노테이션을 붙여 충돌하는 빈 중 우선순위(우선권을 가지고 매칭되는 빈)를 설정한다.                           
 
-## #4 [스프링 Bean의 생명주기와 콜백]                          
+## #4 스프링 Bean의 생명주기와 콜백                         
 ### [#4-1 Bean의 생명주기와 초기화, 종료 작업](https://github.com/HunSeongPark/spring-core/commit/c7140cd4df55750c1701c020d3fd4158a100c512)              
 - DB 커넥션 풀이나 네트워크 소켓과 같이 애플리케이션 시작 시점에 초기화 메소드를 수행하고, 애플리케이션 종료 시점에 종료 메소드를 수행하는 것이 필요할 때가 많이 있다.
 - 스프링 Bean은 `객체 생성 -> 의존관계 주입`의 과정을 거친다.
