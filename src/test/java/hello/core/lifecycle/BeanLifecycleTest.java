@@ -15,7 +15,7 @@ public class BeanLifecycleTest {
     @Test
     void lifecycleTest() {
         ConfigurableApplicationContext ac = new AnnotationConfigApplicationContext(LifeCycleConfig.class);
-        NetworkClient client = ac.getBean(NetworkClient.class);
+        AnnotationNetworkClient client = ac.getBean(AnnotationNetworkClient.class);
 
         // 스프링 컨테이너를 종료하기 위해 ConfigurableApplicationContext 필요
         ac.close();
@@ -25,8 +25,8 @@ public class BeanLifecycleTest {
     static class LifeCycleConfig {
 
         @Bean
-        public NetworkClient networkClient() {
-            NetworkClient networkClient = new NetworkClient();
+        public AnnotationNetworkClient annotationNetworkClient() {
+            AnnotationNetworkClient networkClient = new AnnotationNetworkClient();
             networkClient.setUrl("http://hello-spring.dev");
             return networkClient;
         }
