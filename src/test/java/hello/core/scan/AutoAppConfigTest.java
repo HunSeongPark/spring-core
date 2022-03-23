@@ -16,6 +16,7 @@ public class AutoAppConfigTest {
     void basicScan() {
         ApplicationContext ac = new AnnotationConfigApplicationContext(AutoAppConfig.class);
         MemberService memberService = ac.getBean(MemberService.class);
+        // MemberService.class에 대한 Bean 등록이 자동으로 이루어짐 (OK)
         Assertions.assertThat(memberService).isInstanceOf(MemberService.class);
     }
 }
